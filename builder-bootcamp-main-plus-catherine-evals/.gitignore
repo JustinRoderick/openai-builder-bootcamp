@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+.dist/
+dist/
+build/
+.npmrc
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.env.*
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editors/IDE
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Local data
+/data/
+/shared/data/
+
+# Lab-specific build artifacts
+labs/lab05_codex_guided/.next/
+labs/lab05_codex_guided/tsconfig.tsbuildinfo
+labs/lab05_codex_guided/.codex/
+labs/lab05_codex_guided/pnpm-lock.yaml
+labs/lab05_codex_guided/AGENTS.md
+labs/lab05_codex_guided/package.json
+labs/lab05_codex_guided/package.json
+labs/lab05_codex_guided/package.json
