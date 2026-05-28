@@ -5,7 +5,7 @@ from agents import FileSearchTool, ModelSettings
 from openai.types.shared import Reasoning
 
 # TODO (later in the exercise): import additional tools when you wire specialists
-# from .tools import lookup_order as lookup_order_tool, check_payment_methods as check_payment_methods_tool, cancel_order as cancel_order_tool, raise_complaint as raise_complaint_tool, FAQ_retrieval as FAQ_retrieval_tool
+from .tools import lookup_order as lookup_order_tool, check_payment_methods as check_payment_methods_tool, cancel_order as cancel_order_tool, raise_complaint as raise_complaint_tool, FAQ_retrieval as FAQ_retrieval_tool
 
 # """
 # Router composition exercises for the Agents Lab.
@@ -47,10 +47,14 @@ def build_knowledge_assistant_tool() -> object:
     knowledge_assistant = Agent(
         name="KnowledgeAssistant",
         instructions=(
-            "You are KnowledgeAssistant"
+            "You are KnowledgeAssistant, a specialist in answering frequently asked questions (FAQ) for customer support. "
+            "Your responsibilities include providing accurate and helpful answers to common customer questions using the stored FAQ information. "
+            "If a user request matches a known FAQ, respond with the relevant information. "
+            "If the question is not covered by the FAQ, politely inform the user and suggest contacting customer service for further assistance. "
+            "Keep your responses clear, concise, and focused on the FAQ content."
         ),
-        tools=[],
-        model="gpt-5-nano",
+        tools=[FAQ_retrieval_tool],
+        model="gpt-5-mini",
     )
 
     # Expose the KnowledgeAssistant as a tool for use by other agents
@@ -82,7 +86,13 @@ def build_handoff_tool_pattern() -> Agent:
         name="CentralSupport",
         instructions=(
             "You are CentralSupport, the main customer support agent. "
-            "For any frequently asked questions (such as customer service hours, contact information, or password resets) delegate to the knowledge_assistant tool. "
+            "For any frequently asked questions (such as customer service hours, contact information, or password resets), "
+            "delegate to the faq_specialist tool. "
+            "For other general customer service questions (such as payment methods or direct contact information), "
+            "handle the request yourself using your available tools. "
+            "If the user's question is about an action that is not covered by your available tools, respond with: "
+            "'I'm sorry, I can't help with that yet.' "
+            "Always provide clear, concise, and helpful responses."
         ),
         tools=[check_payment_methods_tool, knowledge_assistant_tool],
         model="gpt-4.1-mini",

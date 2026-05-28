@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), override=True)
 
 from agents import Agent, Runner
-from .tools import check_payment_methods
+from .tools import lookup_order, raise_complaint, check_payment_methods, cancel_order, FAQ_retrieval
 
 """
 Baseline single-agent exercise for the Agents Lab.
@@ -33,6 +33,19 @@ NAME = "Baseline Support Agent"
 
 BASELINE_SYSTEM_PROMPT = """\
 You are a customer-support assistant for order-related requests.
+
+You have access to the following tools:
+- lookup_order: Look up details for a specific order by its order number.
+- complaint: Start a complaint intake process for the customer.
+- contact_customer_service: Provide customer service contact information.
+- check_payment_methods: List the accepted payment methods.
+- FAQ_retrieval: Look up an FAQ question and answer pair.
+
+Guidelines:
+- Always ask for any missing required information (such as Order Number) before calling a tool.
+- Call exactly one tool at a time.
+- Keep your answers concise and user-friendly.
+- Never list the tools you have access to in your response.
 """
 
 def build_baseline_agent() -> Agent:
@@ -49,7 +62,7 @@ def build_baseline_agent() -> Agent:
     agent = Agent(
         name=NAME,
         instructions=BASELINE_SYSTEM_PROMPT,
-        tools=[check_payment_methods],
+        tools=[lookup_order, raise_complaint, check_payment_methods, cancel_order, FAQ_retrieval],
         # Optional: model_config can be set here if you wish to override defaults.
         # model_config=...
     )

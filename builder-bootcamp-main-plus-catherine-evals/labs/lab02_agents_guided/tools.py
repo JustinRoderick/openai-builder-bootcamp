@@ -37,15 +37,40 @@ class OrderDetails(TypedDict):
     This class is used to structure order information as a JSON object for mock responses.
     """
     order_id: str
+    order_status: str
+    order_date: str
+    order_total: float
 
 #Step 1.2: Mock database for orders
-ORDERS_DB: Dict[str, OrderDetails] = {}
+ORDERS_DB: Dict[str, OrderDetails] = {
+    "A123-456": {
+        "order_id": "A123-456",
+        "order_status": "WAITING_FOR_PAYMENT",
+        "order_date": "2025-09-05",
+        "order_total": 100.00
+    },
+    "A123-457": {
+        "order_id": "A123-457",
+        "order_status": "IN_TRANSIT",
+        "order_date": "2025-09-05",
+        "order_total": 100.00
+    },
+    "A123-458": {
+        "order_id": "A123-458",
+        "order_status": "DELIVERED",
+        "order_date": "2025-09-05",
+        "order_total": 100.00
+    }}
 
 #Step 2 Extend the helper function to validate the order_id format.
 # This is a helper function used by multiple tool functions to validate that an order_id is provided.
 # Implement the helper function to validate the order_id format.
 def _require_order_id(order_id: Optional[str]) -> None:
+    if not order_id or not str(order_id).strip():
+        raise ValueError("Missing required argument: order_id")
     order_id = str(order_id).strip()
+    if not re.fullmatch(r"A\d{3}-\d{3}", order_id):
+        raise ValueError("Invalid order_id format; expected alphanumerics/hyphens")
 
 #Step 1: Implement the lookup_order tool with mock data to look up an order by ID. Following Step 1.1 and Step 1.2.
 # If no order is found, raise a ValueError.
@@ -68,9 +93,15 @@ def lookup_order(ctx: RunContextWrapper[Any], args: OrderLookupArgs) -> str:
 
     _require_order_id(args['order_id'])
 
+    if args['order_id'] not in ORDERS_DB:
+        raise ValueError(f"Order {args['order_id']} not found")
+
     order = ORDERS_DB[args['order_id']]
     result = {
         "order_id": order["order_id"],
+        "order_status": order["order_status"],
+        "order_date": order["order_date"],
+        "order_total": order["order_total"]
     }
     return json.dumps(result)
 
@@ -83,10 +114,10 @@ def raise_complaint(ctx: RunContextWrapper[Any]) -> str:
     Returns:
         A short confirmation string.
     """
-    return "Complaint intake started. A support specialist will follow up via your account email. [MOCK]"
+    return "Complaint intake started. A support specialist will follow up via your account email."
 
 #Step 4: Implement the check_payment_methods tool, and add a few payment methods.
-PAYMENT_METHODS = "We don't accept money. [MOCK IMPLEMENTATION]"
+PAYMENT_METHODS = "Accepted payment methods: Visa, Mastercard, Amex, PayPal."
 @function_tool
 def check_payment_methods(ctx: RunContextWrapper[Any]) -> str:
     """
@@ -120,7 +151,14 @@ def cancel_order(ctx: RunContextWrapper[Any], args: CancelOrderArgs) -> str:
         ValueError: If the order_id is missing or does not match the expected format.
     """
 
-    return f"Cancellation initiated for order {args['order_id']}. [MOCK IMPLEMENTATION]"
+    _require_order_id(args['order_id'])
+
+    if args['order_id'] not in ORDERS_DB:
+        raise ValueError(f"Order {args['order_id']} not found")
+
+    order = ORDERS_DB[args['order_id']]
+    order['order_status'] = "CANCELLED"
+    return f"Cancellation initiated for order {args['order_id']}. The order status is now {order['order_status']}."
 
 #Step 6: Implementing Tool for FAQ Retrieval by using the FAQ_DATA with the tool function FAQ_retrieval
 
@@ -178,7 +216,13 @@ def FAQ_retrieval(ctx: RunContextWrapper[Any]) -> str:
     """
     
     # Build a human-readable FAQ string
-    return {
-        "question": "What are your customer service hours?",
-        "answer": "Our customer service is available Monday to Friday, 9am–5pm PT."
-    }
+    try:
+        # Build a human-readable FAQ string
+        faq_lines = []
+        for idx, item in enumerate(FAQ_DATA, 1):
+            faq_lines.append(f"Q{idx}: {item['question']}\nA{idx}: {item['answer']}\n")
+        return "\n".join(faq_lines)
+    except Exception as e:
+        # Log the error for debugging and return a generic error message
+        print(f"[ERROR] contact_customer_service FAQ retrieval failed: {e}")
+        return "Sorry, we are unable to retrieve the FAQ at this time. Please try again later."
