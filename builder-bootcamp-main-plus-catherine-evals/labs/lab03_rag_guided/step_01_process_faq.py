@@ -123,7 +123,13 @@ def _parse_faq_items_with_pydantic(
     # System prompt instructs the model to extract all Q/A pairs and return an object with 'faqs'
     # Task: Update the system message below to match the robust extraction prompt from the README-guided or challenge instructions.
     system_msg = (
-        # <PLACEHOLDER>
+        "You are an expert at structured data extraction. "
+        "Extract all question/answer pairs from the provided markdown FAQ document. "
+        "For each, return an object matching the Pydantic type FAQItemPayload: "
+        '{"item": {"input": <question>, "expected_answer": <answer>, "expected_tool": "knowledge_assistant", "expected_category": <snake_case_category>}}. '
+        "The expected_answer may be multi‑paragraph; preserve line breaks using \\n characters. "
+        "Infer the expected_category from the section or context, and convert it to snake_case. "
+        "Return an object of type FAQItemsPayload where 'faqs' is a list of FAQItemPayload objects, one per Q/A pair, in the order they appear."
     )
 
     user_msg = (
