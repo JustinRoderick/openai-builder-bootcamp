@@ -7,6 +7,7 @@ const navLinks = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact Us" },
   { href: "/docs", label: "Docs" },
+  { href: "/guides", label: "Guides" },
 ];
 
 export default function NavBar() {
