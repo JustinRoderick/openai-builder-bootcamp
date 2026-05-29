@@ -5,43 +5,43 @@
 - **Lab type**: Guided, hands-on
 - **Duration**: ~60 minutes
 - **Level**: Advanced builders
-- **Environment**: macOS/Linux terminal, Node.js + pnpm, Codex CLI
+- **Environment**: Codex app or Codex CLI, local terminal, Node.js + pnpm
 - **Repo path**: `labs/lab05_codex_guided`
-- **Last updated:** February 18, 2026
+- **Last updated:** May 29, 2026
 
 ### Overview
 In this lab, you will use Codex to plan, build, and deliver real code changes in an existing Next.js repository. You will:
-- **Create core collaboration artifacts**, such as `AGENTS.md`, `.codex/config.toml` settings, and plan mode.
+- **Create core collaboration artifacts**, such as `AGENTS.md`, and use plan mode before editing.
 - **Use Codex interaction modes** for read-only analysis, plan mode, single-shot execution, and iterative prototyping.
 - **Create and use a reusable Skill** for repeatable page-delivery workflows.
 - **Validate outputs** with lint/typecheck and manual smoke checks.
 
-This lab is intentionally practical. It is designed to reflect how builders work with Codex agents in production-style repos: defining constraints, leveraging plan mode and features, and shipping scoped changes rapidly.
+This lab is intentionally practical. It is designed to reflect how builders work with Codex agents in production-style repos: defining constraints, using plan mode, reviewing changes, and shipping scoped improvements rapidly.
 
 ### Learning Objectives
 After completing this lab, you will be able to:
 
-1. Set up Codex CLI, authenticate with the right method, and run the app locally while keeping your shell usable.
+1. Open the lab in either the Codex app or Codex CLI and run the application locally while keeping a terminal available for development commands.
 2. Use read-only prompts and plan mode to map the codebase, identify target files, and compare implementation options before editing.
-3. Configure repository execution standards (`AGENTS.md` + `.codex/config.toml`) and verify they change how Codex plans and operates.
+3. Configure repository execution standards with `AGENTS.md` and verify they change how Codex plans and operates.
 4. Implement features with single-shot and iterative workflows while keeping diffs scoped and reviewable.
 5. Create and apply a reusable skill, then deliver PR-ready outputs with validation (`pnpm lint`, `pnpm typecheck`) and handoff notes.
 
 ### Prerequisites
-- **Codex CLI**: Installed and available in PATH (`codex --version`)
+- **Codex surface**: Codex app installed, or Codex CLI available in PATH (`codex --version`)
 - **Runtime**: Node.js installed (`node -v`)
 - **Package manager**: `pnpm` installed (`pnpm -v`)
-- **Authentication**: ChatGPT sign-in (`codex login`) or API key (`OPENAI_API_KEY`)
-- **Access**: Account/workspace must have Codex access enabled
+- **Authentication**: Workshop-provided OpenAI API key for Codex sign-in
+- **Access**: Workshop-provided API key must be active for Codex use
 - **Repository**: Local copy of `builder-bootcamp` with access to `labs/lab05_codex_guided`
 
-> **Note:** This lab is written for the Codex CLI. The macOS app and web app are valid alternatives, but the commands below are the canonical path.
+> **Choose your Codex surface:** Complete this lab in either the Codex app or Codex CLI. The prompts, files changed, and validation steps are shared. Where interaction controls differ, this guide provides both paths.
 
 ## Task 1. Set up your environment
 
 > **Tip:** Open this file in Markdown Preview mode for easier scanning during the lab.
 
-In this task, you will verify dependencies, authenticate Codex, and run the app. The app is a small Next.js microsite used as the working codebase for Codex planning, editing, validation, and handoff workflows.
+In this task, you will verify dependencies, choose your Codex surface, and run the app. The app is a small Next.js microsite used as the working codebase for Codex planning, editing, validation, and handoff workflows.
 
 1. Move into this lab directory:
 ```bash
@@ -68,44 +68,65 @@ npm i -g npm@latest
 npm i -g pnpm@latest
 ```
 
-3. Install the Codex CLI and verify version:
+3. Choose one Codex surface.
+
+**Codex app track**
+
+- Open the Codex app, choose **Sign in with an API key**, and paste the OpenAI API key provided by your facilitator when prompted.
+- Treat this key as a secret: do not paste it into Codex prompts, lab output files, screenshots, or source control.
+- Open this folder as the active workspace:
+
+```text
+~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
+```
+
+**Codex CLI track**
+
+- Install or verify the CLI:
+
 ```bash
 npm i -g @openai/codex
 codex --version
 ```
 
-4. Authenticate using one method:
+- Authenticate with the workshop-provided API key. Run `read -s OPENAI_API_KEY`, paste the key, and press Enter; your input will remain hidden:
 
-Method A (recommended in most bootcamp settings):
 ```bash
-codex login
-```
-*Expected output:* Codex opens a browser sign-in flow and confirms login in the terminal when authentication completes.
-
-Method B (API key mode, if your environment uses API credentials):
-```bash
-export OPENAI_API_KEY=sk-...
-echo "$OPENAI_API_KEY"
+read -s OPENAI_API_KEY
+export OPENAI_API_KEY
 printenv OPENAI_API_KEY | codex login --with-api-key
+unset OPENAI_API_KEY
 ```
 
-5. Now that our dependencies are installed, let's ensure we're in the correct lab directory before starting the app:
-```bash
-cd ~/Documents/GitHub/builder-bootcamp
-cd labs/lab05_codex_guided
+The key must not be saved in the repository or included in lab deliverables.
+
+4. Start the local application using your chosen Codex surface.
+
+**Codex app track**
+
+In your active lab workspace, ask Codex:
+
+```text
+Install dependencies if needed, start the local development server for this lab, and open the running application in the in-app browser. Do not edit source files.
 ```
 
-6. Install the necessary packages and start the development server (ideally in a separate terminal tab/window so your main shell stays available for Codex commands):
+Approve the terminal action if prompted. Codex should start the development server and open the localhost URL in the in-app browser for preview.
+
+**Codex CLI track**
+
+Keep Codex available in one terminal, and run the application from a second terminal tab or window:
+
 ```bash
+cd ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 pnpm install
 pnpm dev
 ```
 
-**Checkpoint:** You should see your application load (usually on `http://localhost:3000`, or the next available port) and resemble the following:
+**Checkpoint:** You should see your application load in the Codex in-app browser or your browser (usually on `http://localhost:3000`, or the next available port) and resemble the following:
 
 ![Localhost app running](img/localhost.png)
 
-Now that the environment is ready and your application up and running, you're ready to explore the repo with read-only Codex prompts before making changes.
+Now that the environment is ready and your application is running, you are ready to explore the repo with read-only Codex prompts before making changes.
 
 ## Task 2. Explore the lab files and repo with Codex & plan mode
 
@@ -113,7 +134,28 @@ In this task, you will run read-only prompts to validate that Codex correctly un
 
 This app is a small Next.js customer-support style microsite that we will extend during the lab. Instead of manually mapping the repo first, you will use Codex to quickly surface architecture, entrypoints, commands, and risk areas before making edits.
 
-1. Start Codex from the lab path:
+Use this translation guide whenever the interaction surface differs:
+
+| Workflow step | Codex app | Codex CLI |
+| --- | --- | --- |
+| Open the lab | Open this folder as the workspace | Run `codex` from this folder |
+| Plan before editing | Turn on Plan mode | Run `/plan` |
+| Return to implementation | Turn off Plan mode | Press `Shift+Tab` to leave plan mode |
+| Choose a skill | Use the Skills view or picker | Run `/skills` |
+| Review implementation changes | Inspect the changed files in the diff view | Run `/diff` after implementation |
+
+1. Open the lab in your chosen Codex surface:
+
+**Codex app**
+
+Confirm this folder is the active workspace:
+
+```text
+~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
+```
+
+**Codex CLI**
+
 ```bash
 cd ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 codex
@@ -152,7 +194,10 @@ Some best practices for plan mode:
 - Require concrete validation commands in the plan.
 - Iterate on plan quality before making edits.
 
-3. Put Codex into plan mode using `/plan`, then run:
+3. Enter plan mode, then run the prompt below.
+
+- **Codex app:** Turn on Plan mode in the composer.
+- **Codex CLI:** Run `/plan`.
 
 ```text
 Add a global navbar and pages for About, Contact, and Docs, list exact files to change and why. Suggest a few different implementation plans.
@@ -188,28 +233,16 @@ Add a global navbar and pages for About, Contact, and Docs, list exact files to 
 
 Codex should propose multiple implementation paths similar to the above that include exact files, rationale, execution order, and risks/tradeoffs. You now have a concrete, reviewable implementation plan before starting edits.
 
-4. After reviewing the plan output, press `Esc` to return to the normal Codex input mode.
+4. After reviewing the plan output, return to the standard prompt without implementing the navbar yet. You will implement it after defining repository guidance and validation expectations in the next tasks.
+
+- **Codex app:** If Codex offers to implement the plan, decline or exit the implementation step for now and turn Plan mode off.
+- **Codex CLI:** Press `Shift+Tab` to toggle out of Plan mode.
 
 You should now be back at the standard prompt (not in plan mode), ready to continue to the next task.
-
-5. Optional (recommended): run a reusable structured planning prompt:
-```text
-Build a 4-step implementation plan for this improvement:
-Add active-link styling in the navbar.
-
-For each step include:
-- exact files
-- risk level (low/medium/high)
-- validation commands
-- rollback note if step fails
-```
-
-**Expected output:** A four-step plan with file-level actions, risks, validation commands, and rollback notes.
 
 **Checkpoint:** You should now have both outputs captured:
 - a 6-bullet read-only repository map
 - a plan-mode implementation proposal with file-level steps and tradeoffs
-- an optional structured 4-step plan with risks and rollback notes
 
 With a baseline understanding of the codebase and planning commands, you are now ready to define repository-level execution rules.
 
@@ -223,68 +256,48 @@ Some best practices for building `AGENTS.md` files:
 - Define done criteria that are objectively checkable (for example, named validation commands and required handoff artifacts), so completion is not ambiguous.
 - Keep the document concise and operational, so it is easy to maintain and easy for Codex to follow consistently.
 
-This lab starts without an `AGENTS.md` file. You will now create it with concrete repo instructions that Codex can apply in every later task.
+This lab starts without an `AGENTS.md` file. You will now use Codex to create it with concrete repo instructions that Codex can apply in every later task.
 
-1. Back in your CLI, run this command to write `AGENTS.md` with project context, key entrypoints, workflows, guardrails, and done criteria:
+1. In your active Codex app workspace or CLI session, run this implementation prompt:
 
-```bash
-cat > ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/AGENTS.md <<'EOF'
-# AGENTS.md
+```text
+Create an AGENTS.md file in the current lab directory. Do not edit any other files.
 
-## Project summary
-This repo is a small Next.js (Pages Router) site used for Codex collaboration exercises.
-Optimize for small, reviewable diffs and fast dev-server iteration.
+Include these sections and rules:
+- Project summary: this is a small Next.js Pages Router site for Codex collaboration exercises; optimize for small, reviewable diffs and fast dev-server iteration.
+- Key entrypoints: pages/index.tsx, pages/_app.tsx, components/, styles/globals.css.
+- Dev workflow: pnpm install and pnpm dev.
+- Validation workflow: pnpm lint and pnpm typecheck.
+- Agent guardrails: use the dev server for iterative changes; do not run pnpm build during interactive agent sessions; keep diffs small and scoped; update the lockfile and restart the dev server if dependencies change.
+- Definition of Done: pnpm lint and pnpm typecheck pass; manual smoke checks are documented; PR summary and test plan are ready.
 
-## Key entrypoints
-- `pages/index.tsx`
-- `pages/_app.tsx`
-- `components/`
-- `styles/globals.css`
-
-## Dev workflow
-- `pnpm install`
-- `pnpm dev`
-
-## Validation workflow
-- `pnpm lint`
-- `pnpm typecheck`
-
-## Agent guardrails
-- Use the dev server for iterative changes.
-- Do not run `pnpm build` during interactive agent sessions.
-- Keep diffs small and scoped.
-- If dependencies change: update lockfile and restart dev server.
-
-## Definition of Done
-- `pnpm lint` and `pnpm typecheck` pass
-- Manual smoke checks are documented
-- PR summary and test plan are ready
-EOF
+After editing, summarize the file you changed.
 ```
 
-This creates the operating contract Codex will follow in this repo: where to edit, which commands to run, what to avoid during interactive sessions, and what must be true before a task is considered complete.
+2. Review the new artifact before continuing.
 
-**Checkpoint:** ensure the file has been written with the expected sections:
-```bash
-sed -n '1,160p' ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/AGENTS.md
-```
+- **Codex app:** Open the changed-files or diff view and inspect `AGENTS.md`.
+- **Codex CLI:** Run `/diff` and inspect `AGENTS.md`.
 
-You should see the sections `Project summary`, `Key entrypoints`, `Dev workflow`, `Validation workflow`, `Agent guardrails`, and `Definition of Done`.
+**Checkpoint:** You should see the sections `Project summary`, `Key entrypoints`, `Dev workflow`, `Validation workflow`, `Agent guardrails`, and `Definition of Done`.
 
-Now let's see `AGENTS.md` in action by comparing two Codex prompts.
+Now let's verify that `AGENTS.md` shapes an ordinary task prompt without needing to be named in the request.
 
-2. Run the following command to get into Codex input mode:
+3. Continue in your Codex surface.
+
+- **Codex app:** Continue in the active lab workspace.
+- **Codex CLI:** Start or return to a Codex session from the lab directory:
 
 ```bash
 codex
 ```
 
-3. First run this prompt:
+4. Run this prompt:
 ```text
 Propose a plan to add a /guides page.
 ```
 
-**Expected output:** 
+**Expected output:** The plan should incorporate repository-specific paths, workflow constraints, validation commands, and done criteria from your `AGENTS.md`. For example:
 
 ```bash
 • 1. Confirm scope for /guides: static landing page vs. list of guide items (title, summary, link, tags).
@@ -299,110 +312,48 @@ Propose a plan to add a /guides page.
   7. Prepare PR notes: what changed, why, and test plan/results.
 ```
 
-4. Now run this prompt:
+5. Identify at least two rules from `AGENTS.md` that appeared in the plan even though the prompt did not mention the file.
+
+**Checkpoint:** You created `AGENTS.md` and verified that Codex automatically uses its repo-specific guidance for work in this lab.
+
+Now that repository guidance is both defined and validated, you will verify the workspace and review behavior that protect later implementation work.
+
+## Task 4. Confirm workspace and review behavior
+
+Before asking Codex to implement a feature, confirm that it is grounded in the correct lab folder and that you can inspect the changes it produces before accepting the result or committing them. This habit matters across both the Codex app and CLI.
+
+1. Confirm the active lab location.
+
+- **Codex app:** Confirm the active workspace is:
+
 ```text
-Propose a plan to add a /guides page and strictly follow AGENTS.md, including validation and done criteria.
+~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 ```
 
-**Expected output:**
+- **Codex CLI:** Confirm you started `codex` from:
 
-```bash
-  1. Read current app structure and patterns in pages/index.tsx, pages/_app.tsx, components/, and styles/globals.css to keep /guides consistent and the diff small.
-  2. Start iterative workflow with pnpm dev and keep it running while implementing.
-  3. Add pages/guides.tsx as a Pages Router route with minimal scope:
-      - Page title/intro
-      - Simple guide list (hardcoded data first for a small, reviewable diff)
-      - Basic semantic markup and light styling aligned with existing globals/components
-
-  ... 
-
-  Strict AGENTS.md compliance
-
-  1. Use dev server for iteration.
-  2. Do not run pnpm build.
-  3. Keep changes small and scoped.
-  4. Meet Definition of Done before finishing:
-      - pnpm lint passes
-      - pnpm typecheck passes
-      - Manual smoke checks are documented
-      - PR summary and test plan are ready
-```
-
-Spot the differences between prompt A and B. With `AGENTS.md`, Codex should be more concrete, constrained, and directly aligned to this repository.
-
-**Checkpoint:** You created `AGENTS.md` and verified that Codex outputs become more repo-specific and operational when you explicitly require `AGENTS.md` compliance.
-
-Now that repository guidance is both defined and validated, you will set Codex runtime defaults so sessions stay consistent across model selection, approval behavior, and profile usage.
-
-## Task 4. Create Codex default settings (`.codex/config.toml`)
-
-The `.codex/config.toml` file is a repo-level runtime configuration that Codex reads for model defaults, approval behavior, and profile-specific overrides. In this lab, it gives us consistent session behavior so prompts and outcomes are repeatable across participants. For full schema details and additional options, see the [Codex advanced config reference](https://developers.openai.com/codex/config-advanced).
-
-Some best practices for configuring `.codex/config.toml`:
-- Keep defaults explicit and minimal, so baseline behavior is predictable.
-- Pick one primary model for core workflow consistency, then add profiles for specialized use cases.
-- Treat approval policy as a deliberate safety/control choice, not a convenience toggle.
-- Use clear profile names that describe intent (for example, `lightweight` vs `deep-review`).
-
-We will start by creating a `.codex/config.toml` from scratch with one default profile and two named overrides.
-
-1. Back in your CLI, run the following command to create the directory (if needed) and write the config file:
-```bash
-mkdir -p ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex
-cat > ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex/config.toml <<'EOF'
-model = "gpt-5.3-codex"
-approval_policy = "on-request"
-
-[profiles.deep-review]
-model = "gpt-5.3-codex"
-model_reasoning_effort = "xhigh"
-approval_policy = "on-request"
-
-[profiles.lightweight]
-model = "gpt-5.1-codex-mini"
-approval_policy = "untrusted"
-EOF
-```
-
-This sets a stable default (`gpt-5.3-codex` + `on-request`) and gives you two explicit execution modes you can switch into when task needs change.
-
-**Checkpoint:** ensure the file has been written with the expected fields and profiles:
-
-```bash
-sed -n '1,160p' ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex/config.toml
-```
-
-**Expected output:** You should see:
-- top-level defaults: `model = "gpt-5.3-codex"` and `approval_policy = "on-request"`
-- `[profiles.deep-review]` with high-reasoning / on-request approvals
-- `[profiles.lightweight]` with smaller-model / untrusted approval behavior
-
-Now let's see `.codex/config.toml` in action by validating default behavior and profile switching.
-
-2. Start Codex from the lab directory:
 ```bash
 cd ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
-codex
 ```
 
-3. In Codex, run `/model` and confirm the default model aligns with the top-level config (`gpt-5.3-codex`).
+2. Ask Codex this read-only check:
 
-**Expected output:** The model picker reflects the default model from `.codex/config.toml`.
-
-4. Exit Codex, then start a profile-specific session:
-```bash
-codex --profile lightweight
+```text
+Propose a plan to add a /resources page in this repo. Include the repo rules and validation steps you will follow. Do not edit files.
 ```
 
-5. Run `/model` again and confirm the active model now aligns with the `lightweight` profile (`gpt-5.1-codex-mini`).
+**Expected output:** Codex should reflect the key entrypoints, dev workflow, validation workflow, guardrails, and definition of done from `AGENTS.md`, without the prompt explicitly pointing it to that file.
 
-**Expected output:** The model picker reflects the profile override instead of the top-level default, similar to the example below.
+3. After later implementation prompts, inspect the changed files before accepting results or committing them.
 
-![Codex model picker showing lightweight profile model](img/model-selector-lightweight.png)
+- **Codex app:** Use the changed-files or diff view after edits are made.
+- **Codex CLI:** Run `/diff` after implementation and before committing.
 
-**Checkpoint:** You created `.codex/config.toml`, verified baseline defaults, and confirmed profile-based runtime switching works as expected.
+**Checkpoint:** You confirmed the active repo, verified that `AGENTS.md` guidance affects planning, and know how to review changes after implementation.
 
-With repo and runtime conventions set, you will now wire the validation command used by later tasks.
+> **Advanced note:** Configuration is intentionally outside the required lab path. Current Codex documentation supports selected project-local `.codex/config.toml` settings, but configuration profiles are user-level configuration and are not a project-local lab artifact. See the [Codex configuration reference](https://developers.openai.com/codex/config-reference#configtoml).
+
+With repository guidance and review behavior established, you will now wire the validation command used by later tasks.
 
 ## Task 5. Add a `typecheck` script
 
@@ -414,9 +365,13 @@ Some best practices for script-based validation:
 - Keep validation commands centralized in `package.json` so humans and agents run the same checks.
 - Verify the script exists before relying on it in plans or done criteria.
 
-1. In `package.json`, add (or update) the following line inside the top-level `"scripts"` object:
-```json
+1. Ask Codex to make this focused validation change:
+
+```text
+Add a reusable typecheck script to package.json:
 "typecheck": "tsc --noEmit"
+
+Keep the edit limited to package.json. After making the change, run pnpm typecheck and summarize the result.
 ```
 
 **Expected scripts shape:**
@@ -426,61 +381,42 @@ Some best practices for script-based validation:
   "dev": "next dev --turbopack",
   "build": "next build",
   "start": "next start",
-  "lint": "next lint",
+  "lint": "eslint .",
   "typecheck": "tsc --noEmit"
 }
 ```
 
-2. Checkpoint: ensure the script is present in `package.json`:
-```bash
-rg -n '"typecheck"\s*:\s*"tsc --noEmit"' package.json
+2. Inspect Codex's diff before continuing.
+
+- **Codex app:** Confirm the changed-files view shows only the new `package.json` script.
+- **Codex CLI:** Run `/diff` and confirm only the intended script was added.
+
+3. Ask Codex to exercise the validation command and clean up after itself:
+
+```text
+Validate the new typecheck script by temporarily adding one obvious TypeScript type mismatch in pages/index.tsx, running pnpm typecheck to show that it fails, then removing the temporary mismatch and running pnpm typecheck again to show that it passes. Leave no temporary drill change in pages/index.tsx when you finish.
 ```
 
-**Expected output:** 
-
-```bash
-10:    "typecheck": "tsc --noEmit"
-```
-
-3. Now let's see it catch a real issue. Open `pages/index.tsx`, add the line below near the top of the file (for example, after imports):
-
-```ts
-const typecheckDrill: number = "intentional-error";
-```
-
-4. Now run the following command to invoke the typecheck:
-
-```bash
-pnpm typecheck
-```
-
-**Expected output:** TypeScript reports an error similar to the following:
+**Expected output:** During the drill, TypeScript reports an error similar to the following:
 
 ![Typecheck error example output](img/typecheck-error-example.png)
 
-5. Now delete that temporary line and rerun the following command:
-
-```bash
-pnpm typecheck
-```
-
-**Expected output:** 
+After Codex removes the temporary mismatch, the final validation run should succeed:
 
 ```bash
 > agents.md@0.1.0 typecheck /Users/slubbers/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 > tsc --noEmit
 ```
 
-6. Now validate that Codex incorporates this command in its recommendations. Start Codex and enter plan mode:
+4. Review the final diff and confirm that the temporary mismatch is gone. Only the intended `package.json` script should remain from this task.
 
-```bash
-codex
-```
+5. Now validate that Codex incorporates this command in its recommendations. Enter plan mode and run:
 
-Then in the Codex prompt, run:
+- **Codex app:** Turn on Plan mode.
+- **Codex CLI:** Run `/plan`.
+
+Then run this prompt:
 ```text
-/plan
-
 Before shipping a navbar + new pages change in this repo, what validation commands should we run?
 ```
 
@@ -526,7 +462,11 @@ Some best practices for single-shot implementation:
 > - *Layout remains usable on narrow screens.*
 > - *Ensure the navbar is set to a soft purple color.*
 
-1. Start Codex from the lab directory (if not already running):
+1. Return to your Codex surface with Plan mode turned off.
+
+- **Codex app:** Confirm the active workspace is this lab folder.
+- **Codex CLI:** Start Codex from the lab directory if it is not already running:
+
 ```bash
 cd ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 codex
@@ -554,27 +494,40 @@ After implementation, return:
 
 3. Let Codex run. This may take a couple minutes.
 
-If Codex prompts you to apply changes or continue, enter `y` and press Enter.
+Let Codex complete the implementation, then inspect its diff. In the app, review the changed files; in the CLI, run `/diff`. If the result is out of scope, ask Codex to correct or revert its changes before proceeding.
 
-4. Once the implementation completes, run validation:
+4. Once the implementation completes, validate and smoke-test using your chosen Codex surface.
+
+**Codex app**
+
+Ask Codex:
+
+```text
+Validate the navbar and new pages work: run pnpm lint and pnpm typecheck, then open the running local app in the in-app browser and check /, /about, /contact, and /docs. Report validation results and any visible issues. Do not make additional edits unless I ask.
+```
+
+**Codex CLI**
+
+Run validation in your terminal:
 
 ```bash
+pnpm lint
 pnpm typecheck
 ```
 
-**Expected output:** `pnpm typecheck` completes successfully with no TypeScript errors.
-
-5. Run a quick manual smoke check:
 ```bash
 pnpm dev
 ```
-Open the localhost URL shown by `pnpm dev` (often `http://localhost:3000`) and verify you now see the navbar with links for Home, About, Contact Us, and Docs.
+
+Open the localhost URL shown by `pnpm dev` (often `http://localhost:3000`) and verify `/`, `/about`, `/contact`, and `/docs`.
+
+**Expected output:** `pnpm lint` and `pnpm typecheck` complete successfully with no errors, and you see the navbar with links for Home, About, Contact Us, and Docs.
 
 **Expected output:**
 
 ![Task 6 expected navbar and routes](img/task6-navbar-expected.png)
 
-6. Click each navbar link and verify `/`, `/about`, `/contact`, and `/docs` all load correctly.
+5. Confirm each navbar link works and `/`, `/about`, `/contact`, and `/docs` all load correctly.
 
 **Checkpoint:** Feature is implemented, validation passes, navbar is visible, and all four routes load correctly from the navigation links.
 
@@ -590,17 +543,11 @@ Some best practices for skill authoring:
 - Require validation commands and handoff output shape.
 - Keep instructions operational and repo-specific.
 
-1. Let's start by creating the skill directory and empty skill file:
+1. In your Codex surface, ask Codex to create the skill artifact:
 
-```bash
-mkdir -p ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex/skills/add_new_page
-touch ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex/skills/add_new_page/SKILL.md
-```
+```text
+Create `.agents/skills/add_new_page/SKILL.md` in the current lab directory with the following content. Do not edit any application source files yet.
 
-2. Let's now populate `SKILL.md` with the skill contract:
-
-```bash
-cat > ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex/skills/add_new_page/SKILL.md <<'EOF'
 ---
 name: add-new-page
 description: Add a new page in this repo with navbar integration, validation, and handoff output.
@@ -634,26 +581,31 @@ When a request requires adding a page and linking it in the navbar.
 - validation summary
 - manual smoke checklist
 - residual risks
-EOF
 ```
 
-3. Checkpoint: verify the skill file exists and includes the sections above:
-```bash
-sed -n '1,220p' ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided/.codex/skills/add_new_page/SKILL.md
-```
+2. Inspect the new skill file in Codex before invoking it.
+
+- **Codex app:** Review `.agents/skills/add_new_page/SKILL.md` in the changed-files or diff view.
+- **Codex CLI:** Run `/diff` and review the new skill file.
 
 **Expected output:** You should see frontmatter plus sections for `Purpose`, `When to use`, `Inputs`, `Workflow`, and `Required outputs`.
 
-4. Let's test it out - start Codex from the lab directory:
+3. Continue in your Codex surface in the lab directory.
+
+- **Codex app:** Continue in the active lab workspace.
+- **Codex CLI:** Start Codex from the lab directory if it is not already running:
 
 ```bash
 cd ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 codex
 ```
 
-5. In Codex CLI, run `/skills`, confirm `add-new-page` appears in the list, and select it.
+4. Select the new skill.
 
-6. In the same Codex session, invoke the skill with a concrete task brief:
+- **Codex app:** Open the Skills view or picker, confirm `add-new-page` appears, and select it.
+- **Codex CLI:** Run `/skills`, confirm `add-new-page` appears, and select it.
+
+5. In the same Codex session, invoke the skill with a concrete task brief:
 ```text
 $add-new-page
 
@@ -675,22 +627,34 @@ Return:
 
 **Expected output:** Codex returns a scoped implementation that follows the skill contract and includes the required handoff outputs.
 
-7. Let Codex run and apply the patch. If prompted, enter `y` to proceed.
+6. Let Codex run, then inspect the diff and correct any changes that do not match the skill contract before validation.
 
-8. Run validation, then open the new page route:
+7. Validate and preview the new page using your chosen surface.
+
+**Codex app**
+
+Ask Codex:
+
+```text
+Validate the Guides page produced through the skill: run pnpm lint and pnpm typecheck, then open /guides in the in-app browser and confirm the page renders and the navbar includes Guides. Report the results without making additional edits.
+```
+
+**Codex CLI**
+
 ```bash
+pnpm lint
 pnpm typecheck
 ```
 
-If you also have a working lint setup in your local bundle, run `pnpm lint` as well.
+8. For the CLI path, open the localhost URL shown by `pnpm dev` (often `http://localhost:3000`) and verify `/guides` renders and the navbar includes `Guides`.
 
-9. Open the localhost URL shown by `pnpm dev` (often `http://localhost:3000`) and verify `/guides` renders and the navbar includes `Guides`.
+**Checkpoint:** Skill file is created, `/guides` is implemented through the skill workflow, and validation passes (`pnpm lint` and `pnpm typecheck`).
 
-**Checkpoint:** Skill file is created, `/guides` is implemented through the skill workflow, and validation passes (`pnpm typecheck`, plus `pnpm lint` if configured in your local bundle).
+This completes the core lab path. Continue only if you have time for an open-ended extension.
 
-## Task 8. Push the Boundaries with a Standalone Interactive Prototype
+## Optional Stretch Exercise: Standalone Interactive Prototype
 
-This task is an interactive stretch exercise to show how Codex handles ambitious feature asks. The goal is not a production game; the goal is a working prototype and one disciplined improvement iteration.
+If time remains after completing the core lab, this interactive stretch exercise shows how Codex handles an ambitious feature ask. The goal is not a production game; the goal is a working prototype and one disciplined improvement iteration.
 
 Unlike Task 6 and Task 7, this stretch task should be isolated from the main lab app. You will ask Codex to build a standalone prototype in a separate folder so you can experiment freely without breaking the core Next.js site used in earlier tasks.
 
@@ -701,7 +665,7 @@ Some best practices for interactive prototyping with Codex:
 - Ask for explicit run instructions and known limitations in every pass.
 - Require Codex to avoid modifying existing `pages/`, `components/`, and the lab app `package.json`.
 
-1. Start Codex from the lab directory (if not already running):
+1. Return to your Codex surface in the lab directory. CLI participants can start a session with:
 ```bash
 cd ~/Documents/GitHub/builder-bootcamp/labs/lab05_codex_guided
 codex
@@ -729,7 +693,7 @@ Return:
 3) known limitations
 ```
 
-3. Let Codex run and apply the patch. If prompted, enter `y` to proceed.
+3. Let Codex run, inspect its diff, and correct or revert any changes outside `standalone/flight-sim` before proceeding.
 
 **Expected output:** A minimal standalone interactive prototype is added under `standalone/flight-sim` with clear run instructions and known limitations.
 
@@ -847,13 +811,14 @@ If you have additional time, repeat Step 8 with a different theme or mechanic (v
 
 ### Wrap-Up
 In this lab, you completed an end-to-end Codex-assisted development workflow suitable for real-world repository collaboration:
-1. Set up and authenticated Codex CLI in a local development environment.
+1. Worked in either the Codex app or Codex CLI, using the app's local workflow or terminal commands to run and verify local development.
 2. Used read-only and plan-mode prompts to map architecture, entrypoints, risks, and implementation options.
-3. Established repo execution contracts with `AGENTS.md` and runtime defaults via `.codex/config.toml`.
+3. Established a repo execution contract with `AGENTS.md` and practiced reviewing implementation changes before accepting results.
 4. Added and validated a shared `typecheck` command (`tsc --noEmit`) for repeatable quality checks.
 5. Implemented a scoped product/design request using a single-shot Codex execution cycle.
 6. Built and used a reusable skill (`add-new-page`) to ship a new `/guides` route with validation and handoff output.
-7. Ran an interactive stretch iteration using a standalone Three.js prototype without destabilizing the main lab app.
+
+If you completed the optional stretch exercise, you also ran an interactive Three.js prototype iteration without destabilizing the main lab app.
 
 ### Discussion Prompts
 - Operational adoption: Which parts of this workflow are safe to standardize across your team immediately, and which still require review gates?
@@ -865,26 +830,26 @@ In this lab, you completed an end-to-end Codex-assisted development workflow sui
   - Cause: pnpm not installed globally.
   - Fix: `npm i -g pnpm@latest`, then verify with `pnpm -v`.
 - `codex` not found:
-  - Cause: CLI not installed or not on PATH.
-  - Fix: `npm i -g @openai/codex`, then rerun `codex --version`.
+  - Cause: CLI-track participant does not have the CLI installed or on PATH.
+  - Fix: `npm i -g @openai/codex`, then rerun `codex --version`, or switch to the Codex app track.
 - Authentication issues:
-  - Cause: login flow failed or API key not set for key-based auth.
-  - Fix: retry `codex login` or set/export `OPENAI_API_KEY` based on your classroom policy.
-- Skill not available in `/skills`:
+  - Cause: the workshop-provided API key was entered incorrectly, expired, or is unavailable in the selected Codex surface.
+  - Fix: in the Codex app, choose **Sign in with an API key** and re-enter the provided key; in the CLI, rerun the `codex login --with-api-key` steps from Task 1. Ask a facilitator for a replacement key if it still fails.
+- Skill not available:
   - Cause: `SKILL.md` path is wrong or file/frontmatter is malformed.
-  - Fix: verify path at `.codex/skills/add_new_page/SKILL.md`, then rerun `/skills`.
+  - Fix: verify path at `.agents/skills/add_new_page/SKILL.md`, then refresh the Skills view in the app or rerun `/skills` in the CLI.
 - Dev server not accessible:
   - Cause: server stopped, port conflict, or wrong working directory.
   - Fix: rerun `pnpm dev` from `labs/lab05_codex_guided`, then open `http://localhost:3000`.
-- `pnpm lint` fails with `next lint`:
-  - Cause: this lab bundle uses Next.js 16, and `next lint` may not be available in the installed CLI behavior for your environment.
-  - Fix: continue with `pnpm typecheck` + manual smoke checks for this lab run, or add a local ESLint setup if you want a working `pnpm lint` command.
+- `pnpm lint` fails:
+  - Cause: dependencies are not installed or an implementation introduces an ESLint error.
+  - Fix: run `pnpm install`, correct the reported issue, then rerun `pnpm lint`.
 - Lint/typecheck errors after applying changes:
   - Cause: implementation regressions or temporary drill code not removed.
   - Fix: fix reported lines, remove intentional test errors, and rerun `pnpm lint` and `pnpm typecheck`.
-- Standalone prototype accidentally modifies the main lab app:
-  - Cause: Task 8 prompt scope was too broad or Codex ignored isolation constraints.
-  - Fix: reject the patch, restate the isolation boundary (`standalone/flight-sim` only), and rerun the prompt with stricter file-scope language.
+- Optional standalone prototype accidentally modifies the main lab app:
+  - Cause: the stretch prompt scope was too broad or Codex ignored isolation constraints.
+  - Fix: inspect the diff, revert any out-of-bound changes, restate the isolation boundary (`standalone/flight-sim` only), and rerun the prompt with stricter file-scope language.
 
 <!--
 ## Task 9. Multi-step implementation cycle (deferred for SA review)
