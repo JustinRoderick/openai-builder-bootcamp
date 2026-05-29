@@ -1,6 +1,5 @@
 from typing import Any, TypedDict, Optional
 from agents import function_tool, RunContextWrapper
-import re
 from typing import Dict
 import json
 

@@ -24,7 +24,6 @@ load_dotenv(find_dotenv(), override=True)
 
 from openai import OpenAI
 import glob
-from pathlib import Path
 import json
 from datetime import datetime
 

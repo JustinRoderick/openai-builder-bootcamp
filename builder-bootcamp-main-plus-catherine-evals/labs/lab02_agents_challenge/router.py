@@ -1,11 +1,9 @@
 from typing import Optional
 from pydantic import BaseModel
 from agents import Agent, Runner, InputGuardrail, GuardrailFunctionOutput
-from agents import FileSearchTool, ModelSettings
-from openai.types.shared import Reasoning
 
 # TODO (later in the exercise): import additional tools when you wire specialists
-from .tools import lookup_order as lookup_order_tool, check_payment_methods as check_payment_methods_tool, cancel_order as cancel_order_tool, raise_complaint as raise_complaint_tool, FAQ_retrieval as FAQ_retrieval_tool
+from .tools import check_payment_methods as check_payment_methods_tool, FAQ_retrieval as FAQ_retrieval_tool
 
 # """
 # Router composition exercises for the Agents Lab.

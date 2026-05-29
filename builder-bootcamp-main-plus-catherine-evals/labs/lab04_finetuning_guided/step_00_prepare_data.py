@@ -27,12 +27,12 @@ load_dotenv(find_dotenv(), override=True)
 
 try:
     import kagglehub  # type: ignore
-except ImportError as import_error:
+except ImportError:
     kagglehub = None  # type: ignore
 
 try:
     import pandas as pd  # type: ignore
-except ImportError as import_error:
+except ImportError:
     pd = None  # type: ignore
 
 

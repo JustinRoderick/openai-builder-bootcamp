@@ -20,7 +20,7 @@ import json
 import os
 import time
 import uuid
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import re
 
 from dotenv import load_dotenv, find_dotenv
